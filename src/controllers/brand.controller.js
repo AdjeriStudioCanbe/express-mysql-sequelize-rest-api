@@ -1,6 +1,8 @@
 const db = require("../models");
 const { validationResult } = require("express-validator");
 const HttpException = require("../utils/HttpException.utils");
+const pagination = require("../utils/Pagination");
+const { getPagination, getPagingData } = pagination;
 
 const Brand = db.brands;
 const Op = db.Sequelize.Op;
@@ -39,9 +41,13 @@ exports.findAll = (req, res) => {
     conditions["subtitle"] = { [Op.like]: `%${req.query.subtitle}%` };
   }
 
-  Brand.findAll({ where: conditions })
+  const { page, size } = req.query;
+  const { limit, offset } = getPagination(page, size);
+
+  Brand.findAndCountAll({ where: conditions, limit, offset })
     .then((data) => {
-      res.send(data);
+      const response = getPagingData(data, page, limit);
+      res.send(response);
     })
     .catch((err) => {
       res.status(500).send({
