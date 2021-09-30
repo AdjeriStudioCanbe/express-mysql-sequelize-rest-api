@@ -86,7 +86,9 @@ exports.update = (req, res) => {
       if (num == 1) {
         res.send({ message: "Brand was updated successfully!" });
       } else {
-        res.status(404).send({ message: "Data could not be updated!" });
+        res
+          .status(404)
+          .send({ message: "Data could not be updated! Make sure it exists" });
       }
     })
     .catch((err) => {
@@ -98,10 +100,42 @@ exports.update = (req, res) => {
 };
 
 // Delete a Brand with the specified id in the request
-exports.delete = (req, res) => {};
+exports.delete = (req, res) => {
+  const id = req.params.id;
+
+  Brand.destroy({ where: { id: id } })
+    .then((num) => {
+      console.info(num);
+      if (num == 1) {
+        res.send({ message: "Brand was deleted successfully!" });
+      } else {
+        res
+          .status(404)
+          .send({ message: "Data could not be deleted! Make sure it exists" });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send({
+        message: err.message || "Error deleting Brand with id=" + id,
+      });
+    });
+};
 
 // Delete all Brands from the database.
-exports.deleteAll = (req, res) => {};
+exports.deleteAll = (req, res) => {
+  Brand.destroy({ where: {}, truncate: false })
+    .then((num) => {
+      console.info(num);
+      res.send({ message: "All brands were deleted successfully!" });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send({
+        message: err.message || "Error deleting all brands",
+      });
+    });
+};
 
 // Find all published Brands
 exports.findAllPublished = (req, res) => {};

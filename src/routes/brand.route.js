@@ -11,5 +11,7 @@ router.get("/", brandController.findAll);
 router.get("/:id", brandController.findOne);
 router.post("/", createBrandSchema, brandController.create);
 router.put("/:id", updateBrandSchema, brandController.update);
+router.delete("/:id", brandController.delete);
+router.delete("/", brandController.deleteAll);
 
 module.exports = router;
