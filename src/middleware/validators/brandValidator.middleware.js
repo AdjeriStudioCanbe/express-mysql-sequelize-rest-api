@@ -1,6 +1,7 @@
 const db = require("../../models");
 const { body, param } = require("express-validator");
 const { Op } = require("sequelize");
+const isBase64 = require("is-base64");
 
 const Brand = db.brands;
 
@@ -23,8 +24,13 @@ exports.createBrandSchema = [
     .withMessage("Must be at most 255 chars long"),
   body("icon")
     .optional()
-    .isLength({ max: 255 })
-    .withMessage("Must be at most 255 chars long"),
+    .custom((value) => {
+      console.log(isBase64(value, { mimeRequired: true }));
+      if (!isBase64(value, { mimeRequired: true })) {
+        return Promise.reject("Must be a base64 string");
+      }
+      return true;
+    }),
 ];
 
 exports.updateBrandSchema = [
@@ -53,8 +59,5 @@ exports.updateBrandSchema = [
     .optional()
     .isLength({ max: 255 })
     .withMessage("Must be at most 255 chars long"),
-  body("icon")
-    .optional()
-    .isLength({ max: 255 })
-    .withMessage("Must be at most 255 chars long"),
+  body("icon").optional().isBase64().withMessage("Must be a base64 string"),
 ];

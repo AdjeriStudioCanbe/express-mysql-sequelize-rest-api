@@ -10,7 +10,7 @@ const app = express();
 
 dotenv.config();
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,6 +27,9 @@ db.sequelize.sync(/*{ force: true }*/).then(() => {
 });
 
 app.use("/api/v1/brands", brandRouter);
+
+// static files
+app.use(express.static("public"));
 
 // 404 error
 app.all("*", (req, res, next) => {

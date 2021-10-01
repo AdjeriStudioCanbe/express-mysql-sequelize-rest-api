@@ -3,6 +3,10 @@ const { validationResult } = require("express-validator");
 const HttpException = require("../utils/HttpException.utils");
 const pagination = require("../utils/Pagination");
 const { getPagination, getPagingData } = pagination;
+const saveBase64Image = require("../utils/FileHandler");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const Brand = db.brands;
 const Op = db.Sequelize.Op;
@@ -10,11 +14,20 @@ const Op = db.Sequelize.Op;
 // Create and Save a new Brand
 exports.create = (req, res, next) => {
   checkValidation(req);
+  let icon = null;
+  if (req.body.icon.length) {
+    icon = saveBase64Image(
+      req.body.icon,
+      process.env.BRAND_IMAGE_FOLDER,
+      req.body.name
+    );
+    console.log(icon);
+  }
 
   const brand = {
     name: req.body.name,
     subtitle: req.body.subtitle ?? null,
-    icon: req.body.icon ?? null,
+    icon: icon,
   };
   Brand.create(brand)
     .then((data) => {
@@ -62,11 +75,12 @@ exports.findOne = (req, res) => {
   Brand.findByPk(id)
     .then((data) => {
       if (data === null) {
-        throw new Error();
+        throw new HttpException(404, "Model not found", req.params);
       }
       res.send(data);
     })
     .catch((err) => {
+      console.log(err);
       res.status(404).send({
         message: "Model not found",
       });
@@ -142,9 +156,6 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
-
-// Find all published Brands
-exports.findAllPublished = (req, res) => {};
 
 checkValidation = (req) => {
   const errors = validationResult(req);
